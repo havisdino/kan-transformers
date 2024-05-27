@@ -46,7 +46,7 @@ class Trainer:
     @torch.no_grad()
     def evaluate(self, test_loader):
         test_losses = []
-        for input_ids in tqdm(test_loader, desc='eval', leave=False):
+        for input_ids in tqdm(test_loader, desc='eval'):
             input_ids = input_ids.cuda()
             
             outputs = self.gpt_forward(input_ids)

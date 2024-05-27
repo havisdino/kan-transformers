@@ -55,7 +55,7 @@ def collate_fn(input_ids):
 
 def get_loaders(train_data_path, test_data_path, batch_size, tokenizer):
     train_dataset = CSVTextDataset(train_data_path, 1024, tokenizer)
-    test_dataset = CSVTextDataset(test_data_path, 1024, tokenizer)
+    test_dataset = CSVTextDataset(test_data_path, 1024, tokenizer, limit=10)
     
     train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, num_workers=2, prefetch_factor=2)
     test_loader = DataLoader(test_dataset, batch_size, collate_fn=collate_fn, num_workers=2, prefetch_factor=2)
