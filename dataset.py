@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 from tokenizers import Tokenizer
 import torch
-from torch.utils.data import IterableDataset, Dataset
+from torch.utils.data import IterableDataset, DataLoader
 from torchtext import transforms
 import polars as pl
 
@@ -51,4 +51,13 @@ def collate_fn(input_ids):
     input_ids = [item[:-1] for item in input_ids]
     input_ids = transforms.F.to_tensor(input=input_ids, dtype=torch.int32)
     target_ids = transforms.F.to_tensor(input=target_ids, dtype=torch.long)
-    return input_ids, target_ids
+    return input_ids #, target_ids : for autoregressive evaluation
+
+def get_loaders(train_data_path, test_data_path, batch_size, tokenizer):
+    train_dataset = CSVTextDataset(train_data_path, 1024, tokenizer)
+    test_dataset = CSVTextDataset(test_data_path, 1024, tokenizer)
+    
+    train_loader = DataLoader(train_dataset, batch_size, num_workers=2, prefetch_factor=2, collate_fn=collate_fn)
+    test_loader = DataLoader(test_dataset, batch_size, num_workers=2, prefetch_factor=2, collate_fn=collate_fn)
+    
+    return train_loader, test_loader

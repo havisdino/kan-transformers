@@ -344,8 +344,8 @@ class GPT2Model(nn.Module):
 
     def forward(
         self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None
+        input_ids: Optional[torch.LongTensor],
+        attention_mask: Optional[torch.FloatTensor]
     ):        
         inputs_embeds = self.wte(input_ids)
         position_embeds = self.wpe.weight[:input_ids.size(1)]
@@ -372,11 +372,16 @@ class GPT2Model(nn.Module):
         
         
 class GPT2LMHeadModel(nn.Module):
-    _tied_weights_keys = ["lm_head.weight"]
-
     def __init__(self, config):
-        super().__init__(config)
+        super().__init__()
         self.transformer = GPT2Model(config)
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
-
     
+    def forward(
+        self,
+        input_ids: Optional[torch.LongTensor],
+        attention_mask: Optional[torch.FloatTensor]
+    ):
+        x = self.transformer(input_ids)
+        logits = self.lm_head(x)
+        return logits
