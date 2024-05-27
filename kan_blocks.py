@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from kan import KAN
 
 
-class KAN2D(KAN):
+class KAN2D(KAN):    
     def forward(self, x):
         B, L, D = x.size()
         x = x.view(-1, D)
@@ -27,7 +27,7 @@ class KANBlocks(nn.ModuleList):
         self.d_out = width[-1]
         
         for _ in range(n_blocks):
-            kan_block = KAN2D(width, grid, k)
+            kan_block = KAN2D(width, grid, k, device='cuda')
             self.append(kan_block)
     
     def loss_distill(self, inputs, targets):
