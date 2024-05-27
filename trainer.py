@@ -37,6 +37,7 @@ class Trainer:
         self.optimizer.zero_grad()
         self.scaler.scale(loss).backward()
         self.scaler.step(self.optimizer)
+        self.scaler.update()
         
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
