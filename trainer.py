@@ -32,8 +32,6 @@ class Trainer:
         return loss
     
     def train_step(self, kan_inputs, kan_targets):
-        self.kan_blocks.train()
-        
         loss = self.get_loss(kan_inputs, kan_targets)
         
         self.optimizer.zero_grad()
@@ -47,8 +45,6 @@ class Trainer:
     
     @torch.no_grad()
     def evaluate(self, test_loader):
-        self.kan_blocks.train(False)
-        
         test_losses = []
         for input_ids in tqdm(test_loader, desc='eval', leave=False):
             input_ids = input_ids.cuda()

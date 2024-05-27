@@ -22,7 +22,7 @@ class CSVTextDataset(IterableDataset):
         df = pl.read_csv(self.csv_path, columns=[self.column])
         self.df = df.select(pl.col(self.column).shuffle())
         self.ids_cache = []
-        self.end_token_id = self.tokenizer.encode(self.end_token)
+        self.end_token_id = self.tokenizer.encode(self.end_token).ids[0]
     
     def generate_sequences(self):
         N = self.n_tokens
@@ -57,7 +57,7 @@ def get_loaders(train_data_path, test_data_path, batch_size, tokenizer):
     train_dataset = CSVTextDataset(train_data_path, 1024, tokenizer)
     test_dataset = CSVTextDataset(test_data_path, 1024, tokenizer)
     
-    train_loader = DataLoader(train_dataset, batch_size, num_workers=2, prefetch_factor=2, collate_fn=collate_fn)
-    test_loader = DataLoader(test_dataset, batch_size, num_workers=2, prefetch_factor=2, collate_fn=collate_fn)
+    train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, num_workers=2, prefetch_factor=2)
+    test_loader = DataLoader(test_dataset, batch_size, collate_fn=collate_fn, num_workers=2, prefetch_factor=2)
     
     return train_loader, test_loader
