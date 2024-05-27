@@ -32,8 +32,6 @@ class KANBlocks(nn.ModuleList):
     
     def loss_distill(self, inputs, targets):
         assert len(inputs) == len(targets) == self.n_blocks
-        assert inputs.size(-1) == self.d_in
-        assert targets.size(-1) == self.d_out
         
         loss = 0
         
