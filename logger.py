@@ -1,7 +1,7 @@
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from abc import ABC, abstractmethod
-import logging
+from tqdm.auto import tqdm
 
 
 class Logger(ABC):
@@ -21,22 +21,15 @@ class TensorBoardLogger(Logger, SummaryWriter):
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         self.global_step = 1
         
-        logging.basicConfig(
-            format='%(asctime)s %(levelname)-8s %(message)s',
-            level=logging.INFO,
-            datefmt='%H:%M:%S'
-        )
+        self.pbar = tqdm()
     
-    def log(self, **kwargs):
-        info = [f'step: {self.global_step}']
-        
+    def log(self, **kwargs):        
         for tag, value in kwargs.items():
             self.add_scalar(tag, value, self.global_step)
-            info.append(f'{tag}: {value:.4f}')
         
-        msg = ' - '.join(info)
-        logging.info(msg)
-            
+        self.pbar.set_postfix(**kwargs)
+        self.pbar.update()    
+        
         self.global_step += 1
     
     def close(self):
