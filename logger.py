@@ -31,7 +31,7 @@ class TensorBoardLogger(Logger, SummaryWriter):
     def log(self, **kwargs):
         info = [f'step: {self.global_step}']
         
-        for tag, value in kwargs.item():
+        for tag, value in kwargs.items():
             self.add_scalar(tag, value, self.global_step)
             info.append(f'{tag}: {value:.4f}')
         

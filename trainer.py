@@ -86,7 +86,7 @@ class Trainer:
             
             train_loss = self.train_step(kan_inputs, kan_targets)
             
-            if step % self.test_interval:
+            if step % self.test_interval == 0:
                 test_loss = self.evaluate(test_loader)
                 self.logger.log(train_loss=train_loss, test_loss=test_loss)
             else:
