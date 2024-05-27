@@ -4,13 +4,6 @@ from abc import ABC, abstractmethod
 import logging
 
 
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%H:%M:%S'
-)
-
-
 class Logger(ABC):
     @abstractmethod
     def log(self, **kwargs):
@@ -27,6 +20,12 @@ class TensorBoardLogger(Logger, SummaryWriter):
         import os
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         self.global_step = 1
+        
+        logging.basicConfig(
+            format='%(asctime)s %(levelname)-8s %(message)s',
+            level=logging.INFO,
+            datefmt='%H:%M:%S'
+        )
     
     def log(self, **kwargs):
         info = [f'step: {self.global_step}']
