@@ -1,5 +1,5 @@
 kan_blocks:
-  n_blocks: 13
+  n_blocks: 12
   width: [768, 4, 768]
   grid: 3
   k: 3

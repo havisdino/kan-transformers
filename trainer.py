@@ -47,7 +47,7 @@ class Trainer:
     
     @torch.no_grad()
     def evaluate(self, test_loader):
-        self.kan_blocks.eval()
+        self.kan_blocks.train(False)
         
         test_losses = []
         for input_ids in tqdm(test_loader, desc='eval', leave=False):
