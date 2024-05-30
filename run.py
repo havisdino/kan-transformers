@@ -15,7 +15,7 @@ def main(config):
     gpt = GPT2Model(config.gpt)
     gpt = gpt.cuda()
     
-    optimizer = torch.optim.AdamW(kan_blocks.parameters(), config.train.learning_rate)
+    optimizer = torch.optim.Adam(kan_blocks.parameters(), config.train.learning_rate)
     scaler = torch.cuda.amp.GradScaler()
     lr_scheduler = None     # need to be reviewed
     trainer = Trainer(kan_blocks, gpt, optimizer, scaler, lr_scheduler, config.train.test_interval)
