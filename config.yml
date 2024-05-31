@@ -1,8 +1,8 @@
 kan_blocks:
   n_blocks: 12
-  width: [768, 4, 768]
-  grid: 3
-  k: 3
+  layers_hidden: [768, 4, 768]
+  grid_size: 5
+  spline_order: 3
 
 gpt:
   vocab_size: 50257
