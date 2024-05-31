@@ -1,9 +1,9 @@
 from tokenizers import Tokenizer
 import torch
-from torch.utils.data import DataLoader
-from dataset import CSVTextDataset, get_loaders
+from dataset import get_loaders
 from gpt2 import GPT2Model
 from kan_blocks import KANBlocks
+from lr_scheduler import RectifiedLinearLR
 from trainer import Trainer
 from utils import Config
 
@@ -15,9 +15,9 @@ def main(config):
     gpt = GPT2Model(config.gpt)
     gpt = gpt.cuda()
     
-    optimizer = torch.optim.Adam(kan_blocks.parameters(), config.train.learning_rate)
+    optimizer = torch.optim.Adam(kan_blocks.parameters(), lr=1.)
     scaler = torch.cuda.amp.GradScaler()
-    lr_scheduler = None     # need to be reviewed
+    lr_scheduler = RectifiedLinearLR(optimizer, **vars(config.train.lr))
     trainer = Trainer(kan_blocks, gpt, optimizer, scaler, lr_scheduler, config.train.test_interval)
     
     tokenizer = Tokenizer.from_pretrained('gpt2')
