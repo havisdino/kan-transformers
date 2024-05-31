@@ -47,7 +47,7 @@ class Trainer:
     @torch.no_grad()
     def evaluate(self, test_loader):
         test_losses = []
-        for input_ids in tqdm(test_loader, desc='eval'):
+        for input_ids in test_loader:
             input_ids = input_ids.cuda()
             
             outputs = self.gpt_forward(input_ids)
@@ -58,7 +58,9 @@ class Trainer:
             loss = self.get_loss(kan_inputs, kan_targets)
             test_losses.append(loss.item())
         
-        return sum(test_losses) / len(test_losses)
+        test_loss = sum(test_losses) / len(test_losses)
+        print(f'test_loss: {test_loss}')
+        return test_loss
     
     @torch.no_grad() 
     def gpt_forward(self, input_ids):
