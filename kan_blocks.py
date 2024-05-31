@@ -26,7 +26,7 @@ class KANBlocks(nn.ModuleList):
         
         for input, target, block in zip(inputs, targets, self):
             output = block(input)
-            loss += F.mse_loss(output, target)
+            loss += F.mse_loss(output, target) / self.n_blocks
         
         return loss 
     
