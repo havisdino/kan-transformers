@@ -3,6 +3,7 @@ from typing import Optional
 from tokenizers import Tokenizer
 import torch
 from torch.utils.data import IterableDataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
 from torchtext import transforms
 import polars as pl
 
@@ -54,11 +55,14 @@ def collate_fn(input_ids):
     return input_ids #, target_ids : for autoregressive evaluation
 
 
-def get_loaders(train_data_path, test_data_path, batch_size, tokenizer):
-    train_dataset = CSVTextDataset(train_data_path, 1024, tokenizer)
-    test_dataset = CSVTextDataset(test_data_path, 1024, tokenizer, limit=10)
+def get_loaders(rank, world_size, train_data_path, test_data_path, n_tokens, batch_size, tokenizer):
+    train_dataset = CSVTextDataset(train_data_path, n_tokens, tokenizer)
+    train_sampler = DistributedSampler(train_dataset, world_size, rank, shuffle=False, drop_last=True)
     
-    train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, num_workers=2, prefetch_factor=2)
-    test_loader = DataLoader(test_dataset, batch_size, collate_fn=collate_fn, num_workers=2, prefetch_factor=2)
+    test_dataset = CSVTextDataset(test_data_path, n_tokens, tokenizer, limit=10)
+    test_sampler = DistributedSampler(test_dataset, world_size, rank, shuffle=False, drop_last=True)
+    
+    train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, drop_last=True, sampler=train_sampler)
+    test_loader = DataLoader(test_dataset, batch_size, collate_fn=collate_fn, drop_last=True, sampler=test_sampler)
     
     return train_loader, test_loader
