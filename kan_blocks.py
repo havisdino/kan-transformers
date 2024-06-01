@@ -18,3 +18,13 @@ class KANBlocks(nn.ModuleList):
         for _ in range(n_blocks):
             kan_block = KAN(layers_hidden, grid_size, spline_order)
             self.append(kan_block)
+
+    def forward(self, inputs, targets):
+        losses = []
+        
+        for input, target, block in zip(inputs, targets, self):
+            output = block(input)
+            losses.append(F.mse_loss(output, target))
+        
+        loss = sum(losses) / len(losses)
+        return loss

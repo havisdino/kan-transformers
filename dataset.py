@@ -57,12 +57,12 @@ def collate_fn(input_ids):
 
 def get_loaders(rank, world_size, train_data_path, test_data_path, n_tokens, batch_size, tokenizer):
     train_dataset = CSVTextDataset(train_data_path, n_tokens, tokenizer)
-    train_sampler = DistributedSampler(train_dataset, world_size, rank, shuffle=False, drop_last=True)
+    # train_sampler = DistributedSampler(train_dataset, world_size, rank, shuffle=False, drop_last=True)
     
     test_dataset = CSVTextDataset(test_data_path, n_tokens, tokenizer, limit=10)
-    test_sampler = DistributedSampler(test_dataset, world_size, rank, shuffle=False, drop_last=True)
+    # test_sampler = DistributedSampler(test_dataset, world_size, rank, shuffle=False, drop_last=True)
     
-    train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, drop_last=True, sampler=train_sampler)
-    test_loader = DataLoader(test_dataset, batch_size, collate_fn=collate_fn, drop_last=True, sampler=test_sampler)
+    train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, drop_last=True)
+    test_loader = DataLoader(test_dataset, batch_size, collate_fn=collate_fn, drop_last=True)
     
     return train_loader, test_loader

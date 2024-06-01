@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 import torch
 from torch import nn
@@ -32,14 +33,7 @@ class Trainer:
         return self.causal_mask[None, :n_positions, :n_positions]
     
     def get_loss_distill(self, inputs, targets):    
-        losses = []
-        
-        for input, target, block in zip(inputs, targets, self.kan_blocks):
-            output = block(input)
-            losses.append(F.mse_loss(output, target))
-        
-        loss = sum(losses) / len(losses)
-        return loss
+        return self.kan_blocks(inputs, targets)
     
     def get_loss(self, kan_inputs, kan_targets):
         with torch.autocast('cuda', torch.float16):
@@ -86,10 +80,10 @@ class Trainer:
             outputs = self.gpt(input_ids, attention_mask)
         return outputs
             
-    def train(self, train_loader, test_loader, n_steps):
+    def train(self, rank, train_loader, test_loader, n_steps):
         data_iter = iter(train_loader)
-        train_loader.sampler.set_epoch(self.epoch)
-        test_loader.sampler.set_epoch(self.epoch)
+        # train_loader.sampler.set_epoch(self.epoch)
+        # test_loader.sampler.set_epoch(self.epoch)
         
         for step in range(1, 1 + n_steps):
             try:
@@ -100,6 +94,7 @@ class Trainer:
                 test_loader.sampler.set_epoch(self.epoch)
                 data_iter = iter(train_loader)
                 input_ids = next(data_iter)
+            input_ids = input_ids.to(rank)
             
             outputs = self.gpt_forward(input_ids)
                 

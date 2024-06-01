@@ -26,6 +26,8 @@ def cleanup():
 
 
 def main(rank, world_size, config):
+    setup(rank, world_size)
+    
     kan_blocks = KANBlocks(**vars(config.kan_blocks))
     kan_blocks = kan_blocks.to(rank)
     kan_blocks = DDP(kan_blocks, [rank], rank, find_unused_parameters=True)
@@ -52,7 +54,7 @@ def main(rank, world_size, config):
         config.data.n_tokens, config.train.batch_size, tokenizer
     )
     
-    trainer.train(train_loader, test_loader, config.train.n_steps)
+    trainer.train(rank, train_loader, test_loader, config.train.n_steps)
     cleanup()
     
     
