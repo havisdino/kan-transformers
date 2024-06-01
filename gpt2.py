@@ -382,6 +382,7 @@ class GPT2LMHeadModel(nn.Module):
         input_ids: Optional[torch.LongTensor],
         attention_mask: Optional[torch.FloatTensor]
     ):
-        x = self.transformer(input_ids, attention_mask)
+        outputs = self.transformer(input_ids, attention_mask)
+        x = outputs['last_hidden_states']
         logits = self.lm_head(x)
         return logits
