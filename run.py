@@ -64,7 +64,7 @@ if __name__ == '__main__':
     import torch.multiprocessing as mp
     
     config = Config.from_yaml('config.yml')
-    world_size = config.train.world_size
+    world_size = len(config.distributed.device_ids)
     mp.spawn(
         main,
         args=(world_size, config),

@@ -1,6 +1,6 @@
 kan_blocks:
     n_blocks: 12
-    layers_hidden: [768, 32, 32, 768]
+    layers_hidden: [768, 64, 64, 768]
     grid_size: 5
     spline_order: 3
 
@@ -37,7 +37,6 @@ train:
         stop_descending_step: 2000
     pretrain_path: pretrained/gpt2.pt
     batch_size: 32
-    world_size: 3
     n_steps: 10000
     test_interval: 100
     checkpoint_interval: 100
