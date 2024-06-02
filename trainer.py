@@ -100,7 +100,7 @@ class Trainer:
             self.logger.log(train_loss=train_loss, epoch=self.epoch)
             
             dist.barrier()    
-            if step % self.checkpoint_interval == 0:
+            if step % self.checkpoint_interval == 0 and dist.get_rank() == 0:
                 save_checkpoint(
                     self.kan_blocks, self.optimizer, self.scaler, self.lr_scheduler,
                     step, self.checkpoint_interval, self.checkpoint_retention

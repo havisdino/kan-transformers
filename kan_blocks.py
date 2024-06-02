@@ -1,3 +1,4 @@
+from typing import Iterable
 from torch import nn
 import torch.nn.functional as F
 from kan import KAN
@@ -7,7 +8,7 @@ class KANBlocks(nn.ModuleList):
     def __init__(
         self,
         n_blocks: int,
-        layers_hidden: list | tuple,
+        layers_hidden: Iterable,
         grid_size: int,
         spline_order: int 
     ):

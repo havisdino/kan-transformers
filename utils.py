@@ -34,10 +34,7 @@ def count_params(model):
 
 
 def save_checkpoint(kan_blocks, optimizer, scaler, lr_scheduler, step, cp_interval, retention):
-    if isinstance(kan_blocks, nn.Module):
-        kan_state_dict = kan_blocks.state_dict()
-    elif isinstance(kan_blocks, nn.parallel.DistributedDataParallel):
-        kan_state_dict = kan_blocks.module.state_dict()
+    kan_state_dict = kan_blocks.module.state_dict()
     
     checkpoint = dict(
         kan_blocks=kan_state_dict,
