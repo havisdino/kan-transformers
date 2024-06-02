@@ -315,9 +315,11 @@ class GPT2Block(nn.Module):
         hidden_states = self.ln_2(hidden_states)
         
         # save the attn_ln output for kan inputs
-        attn_ln_output = hidden_states
+        kan_input = hidden_states
         
         feed_forward_hidden_states = self.mlp(hidden_states)
+        kan_target = feed_forward_hidden_states
+        
         # residual connection
         hidden_states = residual + feed_forward_hidden_states
 
@@ -326,7 +328,7 @@ class GPT2Block(nn.Module):
         else:
             outputs = (hidden_states,) + outputs[1:]
 
-        return outputs, attn_ln_output  # hidden_states, present, (attentions, cross_attentions)
+        return outputs, kan_input, kan_target  # hidden_states, present, (attentions, cross_attentions)
     
 
 class GPT2Model(nn.Module):
@@ -357,11 +359,11 @@ class GPT2Model(nn.Module):
         kan_targets = []
         
         for block in self.h:
-            outputs, attn_ln_output = block(hidden_states, attention_mask=attention_mask)
+            outputs, kan_input, kan_target = block(hidden_states, attention_mask=attention_mask)
             hidden_states = outputs[0]
             
-            kan_inputs.append(attn_ln_output)
-            kan_targets.append(hidden_states)
+            kan_inputs.append(kan_input)
+            kan_targets.append(kan_target)
  
         hidden_states = self.ln_f(hidden_states)
         return dict(
