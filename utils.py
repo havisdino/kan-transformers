@@ -47,14 +47,13 @@ def save_checkpoint(kan_blocks, optimizer, scaler, lr_scheduler, step, retention
     )
     
     dir = './checkpoints'
-    if os.path.exists(dir):
-        os.remove(dir)
-    os.makedirs(dir)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
     
     file_to_remove = f'kanblocks_{step - retention}.pt'
     path_to_remove = os.path.join(dir, file_to_remove)
     if os.path.exists(path_to_remove):
-        os.remove(path_to_remove)
+        os.removedirs(path_to_remove)
     
     file_name = f'kanblocks_{step}.pt'
     save_path = os.path.join(dir, file_name)
