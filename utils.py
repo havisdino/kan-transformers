@@ -33,7 +33,7 @@ def count_params(model):
     return n_params
 
 
-def save_checkpoint(kan_blocks, optimizer, scaler, lr_scheduler, step, retention):
+def save_checkpoint(kan_blocks, optimizer, scaler, lr_scheduler, step, cp_interval, retention):
     if isinstance(kan_blocks, nn.Module):
         kan_state_dict = kan_blocks.state_dict()
     elif isinstance(kan_blocks, nn.parallel.DistributedDataParallel):
@@ -50,10 +50,10 @@ def save_checkpoint(kan_blocks, optimizer, scaler, lr_scheduler, step, retention
     if not os.path.exists(dir):
         os.makedirs(dir)
     
-    file_to_remove = f'kanblocks_{step - retention}.pt'
+    file_to_remove = f'kanblocks_{step - cp_interval * retention}.pt'
     path_to_remove = os.path.join(dir, file_to_remove)
     if os.path.exists(path_to_remove):
-        os.removedirs(path_to_remove)
+        os.remove(path_to_remove)
     
     file_name = f'kanblocks_{step}.pt'
     save_path = os.path.join(dir, file_name)

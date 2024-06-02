@@ -1,9 +1,7 @@
 from dataclasses import dataclass
-from typing import Any
 
 import torch
 from torch import nn
-import torch.nn.functional as F
 import torch.distributed as dist
 
 from logger import TensorBoardLogger
@@ -80,18 +78,14 @@ class Trainer:
             outputs = self.gpt(input_ids, attention_mask)
         return outputs
             
-    def train(self, train_loader, test_loader, n_steps):
+    def train(self, train_loader, n_steps):
         data_iter = iter(train_loader)
-        # train_loader.sampler.set_epoch(self.epoch)
-        # test_loader.sampler.set_epoch(self.epoch)
         
         for step in range(1, 1 + n_steps):
             try:
                 input_ids = next(data_iter)
             except StopIteration:
                 self.epoch += 1
-                train_loader.sampler.set_epoch(self.epoch)
-                test_loader.sampler.set_epoch(self.epoch)
                 data_iter = iter(train_loader)
                 input_ids = next(data_iter)
                 
@@ -103,16 +97,12 @@ class Trainer:
             kan_targets = outputs['kan_targets']
             
             train_loss = self.train_step(kan_inputs, kan_targets)
+            self.logger.log(train_loss=train_loss, epoch=self.epoch)
             
-            if step % self.test_interval == 0:
-                test_loss = self.evaluate(test_loader)
-                self.logger.log(train_loss=train_loss, test_loss=test_loss)
-            else:
-                self.logger.log(train_loss=train_loss)
-                
+            dist.barrier()    
             if step % self.checkpoint_interval == 0:
                 save_checkpoint(
                     self.kan_blocks, self.optimizer, self.scaler, self.lr_scheduler,
-                    step, self.checkpoint_retention
+                    step, self.checkpoint_interval, self.checkpoint_retention
                 )
             dist.barrier()

@@ -2,11 +2,9 @@ import os
 from tokenizers import Tokenizer
 import torch
 import torch.distributed as dist
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from dataset import get_loaders
+from dataset import get_train_loader
 from gpt2 import GPT2Model
 from kan_blocks import KANBlocks
 from lr_scheduler import RectifiedLinearLR
@@ -14,11 +12,12 @@ from trainer import Trainer
 from utils import Config
 
 
-def setup(rank, world_size):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '1012'
+def setup(rank, master_addr, master_port, device_ids):
+    os.environ['MASTER_ADDR'] = master_addr
+    os.environ['MASTER_PORT'] = str(master_port)
+    os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(map(str, device_ids))
     
-    dist.init_process_group('nccl', rank=rank, world_size=world_size)
+    dist.init_process_group('nccl', rank=rank, world_size=len(device_ids))
 
 
 def cleanup():
@@ -26,7 +25,11 @@ def cleanup():
 
 
 def main(rank, world_size, config):
-    setup(rank, world_size)
+    setup(
+        rank, config.distributed.master_addr,
+        config.distributed.master_port,
+        config.distributed.device_ids
+    )
     
     kan_blocks = KANBlocks(**vars(config.kan_blocks))
     kan_blocks = kan_blocks.to(rank)
@@ -35,7 +38,6 @@ def main(rank, world_size, config):
     gpt = GPT2Model(config.gpt)
     gpt = gpt.to(rank)
     gpt = DDP(gpt, [rank], rank)
-    
     
     optimizer = torch.optim.Adam(kan_blocks.parameters(), lr=1.)
     scaler = torch.cuda.amp.GradScaler()
@@ -49,12 +51,12 @@ def main(rank, world_size, config):
     
     tokenizer = Tokenizer.from_pretrained('gpt2')
     
-    train_loader, test_loader = get_loaders(
-        rank, world_size, config.data.train_path, config.data.test_path,
+    train_loader = get_train_loader(
+        rank, world_size, config.data.train_paths,
         config.data.n_tokens, config.train.batch_size, tokenizer
     )
     
-    trainer.train(train_loader, test_loader, config.train.n_steps)
+    trainer.train(train_loader, config.train.n_steps)
     cleanup()
     
     
@@ -62,9 +64,7 @@ if __name__ == '__main__':
     import torch.multiprocessing as mp
     
     config = Config.from_yaml('config.yml')
-
     world_size = config.train.world_size
-    
     mp.spawn(
         main,
         args=(world_size, config),

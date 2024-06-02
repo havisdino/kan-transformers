@@ -16,17 +16,19 @@ class Logger(ABC):
 
 class TensorBoardLogger(Logger, SummaryWriter):
     def __init__(self, log_dir=None, comment="", purge_step=None, max_queue=10, flush_secs=120, filename_suffix=""):
-        super().__init__(log_dir, comment, purge_step, max_queue, flush_secs, filename_suffix)
-        import os
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-        self.global_step = 1
+        SummaryWriter.__init__(self, log_dir, comment, purge_step, max_queue, flush_secs, filename_suffix)
+        import logging
+        logging.getLogger('tensorflow').disabled = True
         
+        self.global_step = 1
         self.pbar = tqdm()
     
-    def log(self, **kwargs):        
+    def log(self, epoch=None, **kwargs):        
         for tag, value in kwargs.items():
             self.add_scalar(tag, value, self.global_step)
         
+        if epoch is not None:
+            self.pbar.set_description(f'epoch {epoch}')
         self.pbar.set_postfix(**kwargs)
         self.pbar.update()    
         
