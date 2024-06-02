@@ -30,11 +30,11 @@ def main(rank, world_size, config):
     
     kan_blocks = KANBlocks(**vars(config.kan_blocks))
     kan_blocks = kan_blocks.to(rank)
-    kan_blocks = DDP(kan_blocks, [rank], rank, find_unused_parameters=True)
+    kan_blocks = DDP(kan_blocks, [rank], rank)
     
     gpt = GPT2Model(config.gpt)
     gpt = gpt.to(rank)
-    gpt = DDP(gpt, [rank], rank, find_unused_parameters=True)
+    gpt = DDP(gpt, [rank], rank)
     
     
     optimizer = torch.optim.Adam(kan_blocks.parameters(), lr=1.)
@@ -54,7 +54,7 @@ def main(rank, world_size, config):
         config.data.n_tokens, config.train.batch_size, tokenizer
     )
     
-    trainer.train(rank, train_loader, test_loader, config.train.n_steps)
+    trainer.train(train_loader, test_loader, config.train.n_steps)
     cleanup()
     
     

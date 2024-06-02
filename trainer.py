@@ -80,7 +80,7 @@ class Trainer:
             outputs = self.gpt(input_ids, attention_mask)
         return outputs
             
-    def train(self, rank, train_loader, test_loader, n_steps):
+    def train(self, train_loader, test_loader, n_steps):
         data_iter = iter(train_loader)
         # train_loader.sampler.set_epoch(self.epoch)
         # test_loader.sampler.set_epoch(self.epoch)
@@ -94,7 +94,8 @@ class Trainer:
                 test_loader.sampler.set_epoch(self.epoch)
                 data_iter = iter(train_loader)
                 input_ids = next(data_iter)
-            input_ids = input_ids.to(rank)
+                
+            input_ids = input_ids.to(dist.get_rank())
             
             outputs = self.gpt_forward(input_ids)
                 
