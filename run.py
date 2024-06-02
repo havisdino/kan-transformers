@@ -36,6 +36,7 @@ def main(rank, world_size, config):
     kan_blocks = DDP(kan_blocks, [rank], rank)
     
     gpt = GPT2Model(config.gpt)
+    gpt.load_state_dict(torch.load(config.train.pretrain_path, 'cpu'))
     gpt = gpt.to(rank)
     gpt = DDP(gpt, [rank], rank)
     

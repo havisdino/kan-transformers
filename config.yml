@@ -1,6 +1,6 @@
 kan_blocks:
     n_blocks: 12
-    layers_hidden: [768, 64, 64, 768]
+    layers_hidden: [768, 64, 768]
     grid_size: 5
     spline_order: 3
 
