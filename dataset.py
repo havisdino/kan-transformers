@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 from tokenizers import Tokenizer
 import torch
-from torch.utils.data import IterableDataset, DataLoader
+from torch.utils.data import IterableDataset, DataLoader, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
 from torchtext import transforms
 import polars as pl
@@ -59,7 +59,7 @@ def get_loaders(rank, world_size, train_data_path, test_data_path, n_tokens, bat
     train_dataset = CSVTextDataset(train_data_path, n_tokens, tokenizer)
     # train_sampler = DistributedSampler(train_dataset, world_size, rank, shuffle=False, drop_last=True)
     
-    test_dataset = CSVTextDataset(test_data_path, n_tokens, tokenizer, limit=10)
+    test_dataset = CSVTextDataset(test_data_path, n_tokens, tokenizer, limit=50)
     # test_sampler = DistributedSampler(test_dataset, world_size, rank, shuffle=False, drop_last=True)
     
     train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, drop_last=True)
