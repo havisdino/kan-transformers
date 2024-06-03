@@ -1,3 +1,4 @@
+test*.py
 checkpoints
 .DS_Store
 .idea

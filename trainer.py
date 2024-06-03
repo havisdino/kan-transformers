@@ -97,7 +97,7 @@ class Trainer:
             kan_targets = outputs['kan_targets']
             
             train_loss = self.train_step(kan_inputs, kan_targets)
-            self.logger.log(train_loss=train_loss, epoch=self.epoch, lr=self.lr_scheduler.get_last_lr())
+            self.logger.log(train_loss=train_loss, epoch=self.epoch, lr=self.optimizer.param_groups[0]['lr'])
             
             dist.barrier()    
             if step % self.checkpoint_interval == 0 and dist.get_rank() == 0:
