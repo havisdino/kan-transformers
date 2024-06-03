@@ -1,3 +1,4 @@
+*.pt
 test*.py
 checkpoints
 .DS_Store

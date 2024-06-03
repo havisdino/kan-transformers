@@ -14,7 +14,7 @@ class Trainer:
     gpt: nn.Module
     optimizer: torch.optim.Optimizer
     scaler: torch.cuda.amp.GradScaler
-    lr_scheduler: torch.optim.lr_scheduler.LRScheduler | None
+    lr_scheduler: torch.optim.lr_scheduler.LRScheduler
     test_interval: int
     checkpoint_interval: int
     checkpoint_retention: int
@@ -46,8 +46,7 @@ class Trainer:
         self.scaler.step(self.optimizer)
         self.scaler.update()
         
-        if self.lr_scheduler is not None:
-            self.lr_scheduler.step()
+        self.lr_scheduler.step()
             
         return loss.detach().item()
     
