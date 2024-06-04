@@ -21,6 +21,15 @@ class Config(Namespace):
         with open(path) as file:
             config_dict = yaml.safe_load(file)
         return Config.from_dict(config_dict)
+    
+    def to_dict(self):
+        def _to_dict(config):
+            config_dict = vars(config)
+            for key, value in config_dict.items():
+                if isinstance(value, Config):
+                    config_dict[key] = _to_dict(value)
+            return config_dict
+        return _to_dict(self)
 
 
 def count_params(model):
