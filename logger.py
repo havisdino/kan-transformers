@@ -1,6 +1,6 @@
-import torch
-from torch.utils.tensorboard import SummaryWriter
 from abc import ABC, abstractmethod
+
+from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm
 
 

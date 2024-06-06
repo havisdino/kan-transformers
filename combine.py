@@ -1,11 +1,11 @@
-from argparse import ArgumentParser
 import os
+from argparse import ArgumentParser
+
 import torch
-from torch import nn
 import yaml
-from gpt2 import GPT2Model
+
 from kan_blocks import KANBlocks
-from kangpt import KANGPT, KANGPTLMHeadModel
+from kangpt import KANGPTLMHeadModel
 from utils import Config
 
 

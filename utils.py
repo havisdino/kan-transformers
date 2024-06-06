@@ -1,9 +1,9 @@
-from argparse import Namespace
 import os
-from torch import nn
+from argparse import Namespace
 
 import torch
 import yaml
+from torch import nn
 
 
 class Config(Namespace):

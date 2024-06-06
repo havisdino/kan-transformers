@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 import torch
-from torch import nn
 import torch.distributed as dist
+from torch import nn
 
 from logger import TensorBoardLogger
 from utils import save_checkpoint
