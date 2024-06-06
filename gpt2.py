@@ -1,4 +1,5 @@
-from typing import Any, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
+
 import torch
 from torch import nn
 from torch.cuda.amp import autocast
@@ -347,7 +348,7 @@ class GPT2Model(nn.Module):
     def forward(
         self,
         input_ids: Optional[torch.LongTensor],
-        attention_mask: Optional[torch.FloatTensor]
+        attention_mask: Optional[torch.FloatTensor] = None
     ):        
         inputs_embeds = self.wte(input_ids)
         position_embeds = self.wpe.weight[:input_ids.size(1)]
@@ -382,7 +383,7 @@ class GPT2LMHeadModel(nn.Module):
     def forward(
         self,
         input_ids: Optional[torch.LongTensor],
-        attention_mask: Optional[torch.FloatTensor]
+        attention_mask: Optional[torch.FloatTensor] = None
     ):
         outputs = self.transformer(input_ids, attention_mask)
         x = outputs['last_hidden_states']

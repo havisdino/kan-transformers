@@ -1,7 +1,8 @@
 import os
-from tokenizers import Tokenizer
+
 import torch
 import torch.distributed as dist
+from tokenizers import Tokenizer
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from dataset import get_train_loader

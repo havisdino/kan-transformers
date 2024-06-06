@@ -1,6 +1,8 @@
 from typing import Iterable
-from torch import nn
+
 import torch.nn.functional as F
+from torch import nn
+
 from kan import KAN
 
 
