@@ -26,9 +26,10 @@ class Trainer:
     
     def train_step(self, kan_inputs, kan_targets):
         self.kan_blocks.train()
+        with torch.autocast('cuda', torch.float16):
+            loss = self.kan_blocks(kan_inputs, kan_targets)
         self.optimizer.zero_grad()
-        loss = self.kan_blocks(kan_inputs,kan_targets, self.scaler)
-
+        self.scaler.scale(loss).backward()
         self.scaler.step(self.optimizer)
         self.scaler.update()
         self.lr_scheduler.step()

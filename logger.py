@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from torch.utils.tensorboard import SummaryWriter
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 
 class Logger(ABC):
