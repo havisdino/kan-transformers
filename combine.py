@@ -4,8 +4,8 @@ from argparse import ArgumentParser
 import torch
 import yaml
 
-from kan_blocks import KANBlocks
-from kangpt import KANGPTLMHeadModel
+from model.kan_blocks import KANBlocks
+from model.kangpt import KANGPTLMHeadModel
 from utils import Config
 
 

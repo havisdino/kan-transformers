@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from kan import KAN
+from .kan import KAN
 
 
 class KANBlocks(nn.ModuleList):

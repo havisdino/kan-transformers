@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch.cuda.amp import autocast
 
-from activations import ACT2FN
+from .activations import ACT2FN
 
 
 class Conv1D(nn.Module):

@@ -3,8 +3,8 @@ from typing import Optional, Tuple, Union
 import torch
 from torch import nn
 
-from gpt2 import GPT2Attention
-from kan import KAN
+from .gpt2 import GPT2Attention
+from .kan import KAN
 
 
 class KANGPTBlock(nn.Module):

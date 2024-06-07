@@ -6,8 +6,8 @@ from tokenizers import Tokenizer
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from dataset import get_train_loader
-from gpt2 import GPT2Model
-from kan_blocks import KANBlocks
+from model.gpt2 import GPT2Model
+from model.kan_blocks import KANBlocks
 from lr_scheduler import RectifiedLinearLR
 from trainer import Trainer
 from utils import Config
