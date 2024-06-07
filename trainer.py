@@ -20,16 +20,17 @@ class Trainer:
     checkpoint_retention: int
         
     def __post_init__(self):
-        self.logger = TensorBoardLogger('logs')        
+        if dist.get_rank() == 0:
+            self.logger = TensorBoardLogger('logs')        
         self.epoch = 1
     
     def train_step(self, kan_inputs, kan_targets):
+        self.kan_blocks.train()
         self.optimizer.zero_grad()
         loss = self.kan_blocks(kan_inputs,kan_targets, self.scaler)
 
         self.scaler.step(self.optimizer)
         self.scaler.update()
-        
         self.lr_scheduler.step()
             
         return loss.item()
@@ -62,12 +63,13 @@ class Trainer:
             kan_targets = outputs['kan_targets']
             
             train_loss = self.train_step(kan_inputs, kan_targets)
-            self.logger.log(train_loss=train_loss, epoch=self.epoch, lr=self.optimizer.param_groups[0]['lr'])
             
-            dist.barrier()    
-            if step % self.checkpoint_interval == 0 and dist.get_rank() == 0:
-                save_checkpoint(
-                    self.kan_blocks, self.optimizer, self.scaler, self.lr_scheduler,
-                    step, self.checkpoint_interval, self.checkpoint_retention
-                )
+            if dist.get_rank() == 0:
+                self.logger.log(train_loss=train_loss, epoch=self.epoch, lr=self.optimizer.param_groups[0]['lr'])
+              
+                if step % self.checkpoint_interval == 0:
+                    save_checkpoint(
+                        self.kan_blocks, self.optimizer, self.scaler, self.lr_scheduler,
+                        step, self.checkpoint_interval, self.checkpoint_retention
+                    )
             dist.barrier()
