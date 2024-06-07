@@ -20,35 +20,19 @@ class Trainer:
     checkpoint_retention: int
         
     def __post_init__(self):
-        maxlen = 1024
-        causal_mask = torch.ones(maxlen, maxlen, device='cuda').tril() == 0
-        self.causal_mask = torch.where(causal_mask, -float('inf'), 0)
-        self.logger = TensorBoardLogger('logs')
-        
+        self.logger = TensorBoardLogger('logs')        
         self.epoch = 1
     
-    def _get_attention_mask(self, n_positions):
-        return self.causal_mask[None, :n_positions, :n_positions]
-    
-    def get_loss_distill(self, inputs, targets):    
-        return self.kan_blocks(inputs, targets)
-    
-    def get_loss(self, kan_inputs, kan_targets):
-        with torch.autocast('cuda', torch.float16):
-            loss = self.get_loss_distill(kan_inputs, kan_targets)
-        return loss
-    
     def train_step(self, kan_inputs, kan_targets):
-        loss = self.get_loss(kan_inputs, kan_targets)
-        
         self.optimizer.zero_grad()
-        self.scaler.scale(loss).backward()
+        loss = self.kan_blocks(kan_inputs,kan_targets, self.scaler)
+        
         self.scaler.step(self.optimizer)
         self.scaler.update()
         
         self.lr_scheduler.step()
             
-        return loss.detach().item()
+        return loss.item()
     
     @torch.no_grad()
     def evaluate(self, test_loader):

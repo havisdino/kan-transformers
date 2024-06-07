@@ -1,6 +1,6 @@
 kan_blocks:
     n_blocks: 12
-    layers_hidden: [768, 64, 768]
+    layers_hidden: [768, 128, 768]
     grid_size: 5
     spline_order: 3
 
@@ -9,7 +9,7 @@ gpt:
     max_position_embeddings: 1024
     hidden_size: 768
     num_hidden_layers: 12
-    num_attention_heads: 1
+    num_attention_heads: 12
     n_inner: null
     activation_function: gelu_new
     resid_pdrop: 0.1
