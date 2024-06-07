@@ -26,9 +26,10 @@ class Trainer:
     
     def train_step(self, kan_inputs, kan_targets):
         self.kan_blocks.train()
+        with torch.autocast('cuda', torch.float16):
+            loss = self.kan_blocks(kan_inputs, kan_targets)
         self.optimizer.zero_grad()
-        loss = self.kan_blocks(kan_inputs,kan_targets, self.scaler)
-
+        self.scaler.scale(loss).backward()
         self.scaler.step(self.optimizer)
         self.scaler.update()
         self.lr_scheduler.step()
@@ -38,7 +39,6 @@ class Trainer:
     @torch.no_grad() 
     def gpt_forward(self, input_ids):
         self.gpt.eval()
-        n_positions = input_ids.size(1)
         with torch.autocast('cuda', torch.float16):
             outputs = self.gpt(input_ids)
         return outputs

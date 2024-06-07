@@ -1,6 +1,5 @@
 from typing import Iterable
 
-import torch
 import torch.nn.functional as F
 from torch import nn
 
@@ -23,14 +22,12 @@ class KANBlocks(nn.ModuleList):
             kan_block = KAN(layers_hidden, grid_size, spline_order)
             self.append(kan_block)
 
-    def forward(self, inputs, targets, scaler):
+    def forward(self, inputs, targets):
         loss_total = 0
         
         for input, target, block in zip(inputs, targets, self):
-            with torch.autocast('cuda', torch.float16):
-                output = block(input)
-                loss = F.huber_loss(output, target) / self.n_blocks
-            scaler.scale(loss).backward()            
-            loss_total += loss.detach()
+            output = block(input)
+            loss = F.huber_loss(output, target) / self.n_blocks
+            loss_total += loss
         
         return loss_total
