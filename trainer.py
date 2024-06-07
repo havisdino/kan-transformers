@@ -26,31 +26,13 @@ class Trainer:
     def train_step(self, kan_inputs, kan_targets):
         self.optimizer.zero_grad()
         loss = self.kan_blocks(kan_inputs,kan_targets, self.scaler)
-        
+
         self.scaler.step(self.optimizer)
         self.scaler.update()
         
         self.lr_scheduler.step()
             
         return loss.item()
-    
-    @torch.no_grad()
-    def evaluate(self, test_loader):
-        test_losses = []
-        for input_ids in test_loader:
-            input_ids = input_ids.cuda()
-            
-            outputs = self.gpt_forward(input_ids)
-            
-            kan_inputs = outputs['kan_inputs']
-            kan_targets = outputs['kan_targets']
-            
-            loss = self.get_loss(kan_inputs, kan_targets)
-            test_losses.append(loss.item())
-        
-        test_loss = sum(test_losses) / len(test_losses)
-        print(f'test_loss: {test_loss}')
-        return test_loss
     
     @torch.no_grad() 
     def gpt_forward(self, input_ids):
