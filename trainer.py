@@ -40,8 +40,7 @@ class Trainer:
         self.gpt.eval()
         n_positions = input_ids.size(1)
         with torch.autocast('cuda', torch.float16):
-            attention_mask = self._get_attention_mask(n_positions)
-            outputs = self.gpt(input_ids, attention_mask)
+            outputs = self.gpt(input_ids)
         return outputs
             
     def train(self, train_loader, n_steps):
@@ -65,7 +64,10 @@ class Trainer:
             train_loss = self.train_step(kan_inputs, kan_targets)
             
             if dist.get_rank() == 0:
-                self.logger.log(train_loss=train_loss, epoch=self.epoch, lr=self.optimizer.param_groups[0]['lr'])
+                self.logger.log(
+                    self.epoch, train_loss=train_loss,
+                    lr=self.optimizer.param_groups[0]['lr']
+                )
               
                 if step % self.checkpoint_interval == 0:
                     save_checkpoint(
