@@ -23,6 +23,9 @@ class TensorBoardLogger(Logger, SummaryWriter):
         self.global_step = 1
         self.pbar = tqdm()
     
+    def set_n_steps(self, n_steps):
+        self.pbar.total = n_steps
+    
     def log(self, epoch=None, **kwargs):        
         for tag, value in kwargs.items():
             self.add_scalar(tag, value, self.global_step)

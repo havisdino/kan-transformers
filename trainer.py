@@ -44,6 +44,9 @@ class Trainer:
         return outputs
             
     def train(self, train_loader, n_steps):
+        if dist.get_rank() == 0:
+            self.logger.set_n_steps(n_steps)
+        
         data_iter = iter(train_loader)
         
         for step in range(1, 1 + n_steps):
