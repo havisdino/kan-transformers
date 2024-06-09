@@ -98,7 +98,7 @@ class KANGPT(nn.Module):
     def forward(
         self,
         input_ids: Optional[torch.LongTensor],
-        attention_mask: Optional[torch.FloatTensor]
+        attention_mask: Optional[torch.FloatTensor] = None
     ):        
         inputs_embeds = self.wte(input_ids)
         position_embeds = self.wpe.weight[:input_ids.size(1)]
@@ -124,7 +124,7 @@ class KANGPTLMHeadModel(nn.Module):
     def forward(
         self,
         input_ids: Optional[torch.LongTensor],
-        attention_mask: Optional[torch.FloatTensor]
+        attention_mask: Optional[torch.FloatTensor] = None
     ):
         outputs = self.transformer(input_ids, attention_mask)
         logits = self.lm_head(outputs)
