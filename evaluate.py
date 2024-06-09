@@ -25,13 +25,14 @@ def evaluate(model, data_loader):
         input_ids = input_ids.to(dist.get_rank())
         target_ids = target_ids.to(dist.get_rank())
         
-        logits = model(input_ids)
-        ppl = perplexity(logits, target_ids)
+        with torch.autocast('cuda', torch.float16):
+            logits = model(input_ids)
+            ppl = perplexity(logits, target_ids)
         
-        ppl_avg = (ppl_avg * (i - 1) + ppl) / i
-        
-        dist.barrier()
-        dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
+            ppl_avg = (ppl_avg * (i - 1) + ppl) / i
+            
+            dist.barrier()
+            dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
         
         if pbar is not None:
             pbar.set_postfix(ppl_test=ppl_avg.item())
