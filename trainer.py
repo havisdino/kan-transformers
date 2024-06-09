@@ -15,7 +15,7 @@ class Trainer:
     optimizer: torch.optim.Optimizer
     scaler: torch.cuda.amp.GradScaler
     lr_scheduler: torch.optim.lr_scheduler.LRScheduler
-    test_interval: int
+    grad_acc_interval: int
     checkpoint_interval: int
     checkpoint_retention: int
         
@@ -28,13 +28,15 @@ class Trainer:
         self.kan_blocks.train()
         with torch.autocast('cuda', torch.float16):
             loss = self.kan_blocks(kan_inputs, kan_targets)
-        self.optimizer.zero_grad()
+            loss /= self.grad_acc_interval
         self.scaler.scale(loss).backward()
+        return loss.item() * self.grad_acc_interval
+    
+    def accumulate_gradient(self):
         self.scaler.step(self.optimizer)
         self.scaler.update()
+        self.optimizer.zero_grad()
         self.lr_scheduler.step()
-            
-        return loss.item()
     
     @torch.no_grad() 
     def gpt_forward(self, input_ids):
@@ -64,11 +66,14 @@ class Trainer:
             kan_inputs = outputs['kan_inputs']
             kan_targets = outputs['kan_targets']
             
-            train_loss = self.train_step(kan_inputs, kan_targets)
+            loss = self.train_step(kan_inputs, kan_targets)
+            
+            if step % self.grad_acc_interval == 0:
+                self.accumulate_gradient()
             
             if dist.get_rank() == 0:
                 self.logger.log(
-                    self.epoch, train_loss=train_loss,
+                    self.epoch, loss=loss,
                     lr=self.optimizer.param_groups[0]['lr']
                 )
               

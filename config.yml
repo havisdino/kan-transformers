@@ -36,9 +36,9 @@ train:
         start_descending_step: 100
         stop_descending_step: 2000
     pretrain_path: pretrained/gpt2.pt
-    batch_size: 32
+    batch_size: 16
     n_steps: 10000
-    test_interval: 100
+    grad_acc_interval: 20
     checkpoint_interval: 100
     checkpoint_retention: 5
 
