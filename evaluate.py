@@ -29,10 +29,10 @@ def evaluate(model, data_loader):
             logits = model(input_ids)
             ppl = perplexity(logits, target_ids)
         
-        ppl_avg = (ppl_avg * (i - 1) + ppl) / i
-        
-        dist.barrier()
-        dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
+            ppl_avg = (ppl_avg * (i - 1) + ppl) / i
+            
+            dist.barrier()
+            dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
         
         if pbar is not None:
             pbar.set_postfix(ppl_test=ppl_avg.item())
