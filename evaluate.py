@@ -30,7 +30,7 @@ def evaluate(model, data_loader):
         ppl_avg = (ppl_avg * (i - 1) + ppl) / i
         
         dist.barrier()
-        ppl_avg = dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
+        dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
         
         if pbar is not None:
             pbar.set_postfix(ppl_test=ppl_avg.item())
