@@ -17,8 +17,7 @@ from utils import Config
 def evaluate(model, data_loader):
     model.eval()
     
-    if dist.get_rank == 0:
-        pbar = tqdm(desc='eval')
+    pbar = tqdm(desc='eval') if dist.get_rank() == 0 else None
     
     ppl_avg = 0
     for i, (input_ids, target_ids) in enumerate(data_loader, 1):
@@ -33,7 +32,7 @@ def evaluate(model, data_loader):
         dist.barrier()
         ppl_avg = dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
         
-        if dist.get_rank() == 0:
+        if pbar is not None:
             pbar.set_postfix(ppl_test=ppl_avg.item())
             pbar.update()
     
