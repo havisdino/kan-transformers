@@ -48,6 +48,8 @@ class Trainer:
     def train(self, train_loader, n_steps):
         if dist.get_rank() == 0:
             self.logger.set_n_steps(n_steps)
+            
+            print(f'Accumulating gradients after {self.grad_acc_interval} steps')
         
         data_iter = iter(train_loader)
         

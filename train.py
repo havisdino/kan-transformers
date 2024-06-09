@@ -47,7 +47,7 @@ def main(rank, world_size, config):
     
     trainer = Trainer(
         kan_blocks, gpt, optimizer, scaler, lr_scheduler,
-        config.train.test_interval, config.train.checkpoint_interval,
+        config.train.grad_acc_interval, config.train.checkpoint_interval,
         config.train.checkpoint_retention
     )
     
