@@ -9,6 +9,7 @@ from tqdm import tqdm
 import os
 
 from dataset import get_data_loader
+from model.gpt2 import GPT2LMHeadModel
 from model.kangpt import KANGPTLMHeadModel
 from utils import Config
 
@@ -51,7 +52,11 @@ def main(rank, args):
     
     config = Config.from_yaml(args.config)
     
-    model = KANGPTLMHeadModel(config)
+    if args.type == 'kangpt':
+        model = KANGPTLMHeadModel(config)
+    elif args.type == 'gpt':
+        model = GPT2LMHeadModel(config)
+        
     model.to(rank)
     model = DDP(model)
     
@@ -77,6 +82,7 @@ def main(rank, args):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
+    parser.add_argument('--type', type=str, required=True)
     parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--data', type=str, required=True)
