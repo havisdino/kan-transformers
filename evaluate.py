@@ -22,6 +22,9 @@ def evaluate(model, data_loader):
     
     ppl_avg = 0
     for i, (input_ids, target_ids) in enumerate(data_loader, 1):
+        input_ids = input_ids.to(dist.get_rank())
+        target_ids = target_ids.to(dist.get_rank())
+        
         logits = model(input_ids)
         ppl = perplexity(logits, target_ids)
         
