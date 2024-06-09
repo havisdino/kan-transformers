@@ -50,7 +50,18 @@ def collate_fn(batch):
     return torch.tensor(batch, dtype=torch.int32)
 
 
-def get_data_loader(rank, world_size, data_path, n_tokens, batch_size, tokenizer):
-    train_dataset = DistributedJsonlTextDataset(rank, world_size, data_path, n_tokens, tokenizer)
-    train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, drop_last=True)
+def collate_fn_lm(batch):
+    batch = torch.tensor(batch, dtype=torch.long)
+    input_ids = batch[:, :-1]
+    target_ids = batch[:, 1:]
+    return input_ids, target_ids
+
+
+def get_data_loader(rank, world_size, data_paths, n_tokens, batch_size, tokenizer, n_overlap=32, lm=False):
+    n_tokens = n_tokens + 1 if lm else n_tokens
+    train_dataset = DistributedJsonlTextDataset(
+        rank, world_size, data_paths, n_tokens, tokenizer, n_overlap=n_overlap
+    )
+    cfn = collate_fn_lm if lm else collate_fn
+    train_loader = DataLoader(train_dataset, batch_size, collate_fn=cfn, drop_last=True)
     return train_loader
