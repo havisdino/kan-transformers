@@ -15,7 +15,7 @@ gpt:
     resid_pdrop: 0.1
     embd_pdrop: 0.1
     attn_pdrop: 0.1
-    layer_norm_epsilon: 0.0001
+    layer_norm_epsilon: 1.0e-5
     initializer_range: 0.02
     summary_type: cls_index
     summary_use_proj: true
