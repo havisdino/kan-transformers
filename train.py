@@ -5,7 +5,7 @@ import torch.distributed as dist
 from tokenizers import Tokenizer
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from dataset import get_train_loader
+from dataset import get_data_loader
 from model.gpt2 import GPT2Model
 from model.kan_blocks import KANBlocks
 from lr_scheduler import RectifiedLinearLR
@@ -53,7 +53,7 @@ def main(rank, world_size, config):
     
     tokenizer = Tokenizer.from_pretrained('gpt2')
     
-    train_loader = get_train_loader(
+    train_loader = get_data_loader(
         rank, world_size, config.data.train_paths,
         config.data.n_tokens, config.train.batch_size, tokenizer
     )

@@ -50,7 +50,7 @@ def collate_fn(batch):
     return torch.tensor(batch, dtype=torch.int32)
 
 
-def get_train_loader(rank, world_size, train_data_path, n_tokens, batch_size, tokenizer):
-    train_dataset = DistributedJsonlTextDataset(rank, world_size, train_data_path, n_tokens, tokenizer)
+def get_data_loader(rank, world_size, data_path, n_tokens, batch_size, tokenizer):
+    train_dataset = DistributedJsonlTextDataset(rank, world_size, data_path, n_tokens, tokenizer)
     train_loader = DataLoader(train_dataset, batch_size, collate_fn=collate_fn, drop_last=True)
     return train_loader
