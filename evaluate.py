@@ -58,6 +58,7 @@ def main(rank, args):
     elif args.type == 'gpt':
         model = GPT2LMHeadModel(config)
         
+    model.load_state_dict(torch.load(args.model, 'cpu'))    
     model.to(rank)
     model = DDP(model)
     
