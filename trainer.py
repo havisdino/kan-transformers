@@ -48,8 +48,9 @@ class Trainer:
     def train(self, train_loader, n_steps):
         if dist.get_rank() == 0:
             self.logger.set_n_steps(n_steps)
-            
             print(f'Accumulating gradients after {self.grad_acc_interval} steps')
+        
+        self.optimizer.zero_grad()
         
         data_iter = iter(train_loader)
         
@@ -70,18 +71,21 @@ class Trainer:
             
             loss = self.train_step(kan_inputs, kan_targets)
             
-            if step % self.grad_acc_interval == 0:
+            if step % self.grad_acc_interval != 0:
+                if dist.get_rank() == 0:
+                    self.logger.pbar.update()
+            else:
                 self.accumulate_gradient()
             
-            if dist.get_rank() == 0:
-                self.logger.log(
-                    self.epoch, loss=loss,
-                    lr=self.optimizer.param_groups[0]['lr']
-                )
-              
-                if step % self.checkpoint_interval == 0:
-                    save_checkpoint(
-                        self.kan_blocks, self.optimizer, self.scaler, self.lr_scheduler,
-                        step, self.checkpoint_interval, self.checkpoint_retention
+                if dist.get_rank() == 0:
+                    self.logger.log(
+                        self.epoch, loss=loss,
+                        lr=self.optimizer.param_groups[0]['lr']
                     )
+                
+                    if step % self.checkpoint_interval == 0:
+                        save_checkpoint(
+                            self.kan_blocks, self.optimizer, self.scaler, self.lr_scheduler,
+                            step, self.checkpoint_interval, self.checkpoint_retention
+                        )
             dist.barrier()

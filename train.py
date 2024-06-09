@@ -66,6 +66,9 @@ if __name__ == '__main__':
     import torch.multiprocessing as mp
     
     config = Config.from_yaml('config.yml')
+    
+    assert config.train.checkpoint_interval % config.train.grad_acc_interval == 0
+    
     world_size = len(config.distributed.device_ids)
     mp.spawn(
         main,
