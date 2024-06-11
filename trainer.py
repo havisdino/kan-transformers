@@ -79,7 +79,7 @@ class Trainer:
             
                 if dist.get_rank() == 0:
                     self.logger.log(
-                        self.epoch, loss=loss,
+                        self.epoch, loss_avg=loss / 12,
                         lr=self.optimizer.param_groups[0]['lr']
                     )
                 
