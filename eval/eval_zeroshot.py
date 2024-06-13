@@ -3,12 +3,11 @@ import torch
 import torch.multiprocessing as mp
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
-from torchmetrics.functional.text.perplexity import perplexity
 from argparse import ArgumentParser
 from tqdm import tqdm
 import os
 
-from dataset import get_data_loader
+from .zeroshot_data import get_data_loader
 from model.gpt2 import GPT2LMHeadModel
 from model.kangpt import KANGPTLMHeadModel
 from utils import Config
@@ -20,25 +19,34 @@ def evaluate(model, data_loader):
     
     pbar = tqdm(desc='eval') if dist.get_rank() == 0 else None
     
-    ppl_avg = 0
-    for i, (input_ids, target_ids) in enumerate(data_loader, 1):
-        input_ids = input_ids.to(dist.get_rank())
-        target_ids = target_ids.to(dist.get_rank())
+    n_true_preds = torch.zeros([])
+    
+    for i, (inputs, target) in enumerate(data_loader, 1):
+        assert isinstance(inputs, dict)
+        assert 'input_ids' in inputs.keys()
+        assert 'attention_mask' in inputs.keys()
+        assert isinstance(target, int)
+        
+        inputs = inputs.to(dist.get_rank())
         
         with torch.autocast('cuda', torch.float16):
-            logits = model(input_ids)
-            ppl = perplexity(logits, target_ids)
-        
-            ppl_avg = (ppl_avg * (i - 1) + ppl) / i
+            logits = model(**inputs)
+            log_probs = logits.log_softmax(-1)
+            indices = torch.tensor([[target]]).repeat(inputs.size(0), 1)
+            log_probs = log_probs.gather(-1, indices)
+            choice = log_probs.argmax(0)
             
-            dist.barrier()
-            dist.all_reduce(ppl_avg, dist.ReduceOp.AVG)
-        
-        if pbar is not None:
-            pbar.set_postfix(ppl_test=ppl_avg.item())
-            pbar.update()
-    
-    return ppl_avg
+            if choice == target:
+                n_true_preds += 1.
+            
+            acc = n_true_preds / i
+            dist.all_reduce(acc, dist.ReduceOp.AVG)
+            
+            if pbar is not None:
+                pbar.set_postfix(f'acc: {acc.item()}')
+                pbar.update()
+            
+    return acc
 
 
 def setup(rank, master_addr, master_port, device_ids: str):
@@ -69,15 +77,13 @@ def main(rank, args):
         world_size=len(args.device_ids.split(',')),
         data_paths=(args.data,),
         n_tokens=1024,
-        batch_size=args.batch_size,
-        tokenizer=tokenizer,
-        n_overlap=0, lm=True
+        tokenizer=tokenizer
     )
     
-    ppl_avg = evaluate(model, data_loader)
+    acc = evaluate(model, data_loader)
     
     if rank == 0:
-        print(f'Perplexity: {ppl_avg}')
+        print(f'Zero-shot accuracy: {acc}')
     
     dist.destroy_process_group()
 
@@ -88,7 +94,6 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--data', type=str, required=True)
-    parser.add_argument('--batch-size', type=int, required=True)
     parser.add_argument('--master-addr', type=str, default='localhost')
     parser.add_argument('--master-port', type=str, default='9999')
     parser.add_argument('--device-ids', type=str, default='0')
