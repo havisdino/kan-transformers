@@ -37,21 +37,20 @@ class DistributedZeroShotDataset(IterableDataset):
                         input_ids = [torch.tensor((prompt_ids + ids)[:self.n_tokens]) for ids in class_ids]
                         input_ids = pad_sequence(input_ids, batch_first=True, padding_value=self.eos_token_id)
                         
-                        attention_mask = torch.where(input_ids == self.eos_token_id, 0, 1)
                         
-                        yield dict(input_ids=input_ids, attention_mask=attention_mask), target
+                        yield input_ids, target
 
-                    count += 1
+                    self.count += 1
     
     def __iter__(self):
         return self.generate_sequences()
    
 
 def collate_fn(batch):
-    inputs, target = batch
+    inputs, target = batch[0]
     return inputs, target
 
 
 def get_data_loader(rank, world_size, data_paths, n_tokens, tokenizer):
-    dataset = DistributedZeroShotDataset(rank, world_size, data_paths, n_tokens, tokenizer)
+    dataset = DistributedZeroShotDataset(rank, world_size, data_paths, n_tokens + 1, tokenizer)
     return DataLoader(dataset, collate_fn=collate_fn)

@@ -1,3 +1,4 @@
+eval/eval_zeroshot_cpu.py
 test
 *.pt
 test*.py

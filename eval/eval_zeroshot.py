@@ -1,5 +1,6 @@
 from tokenizers import Tokenizer
 import torch
+import torch.nn.functional as F
 import torch.multiprocessing as mp
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -21,20 +22,24 @@ def evaluate(model, data_loader):
     
     n_true_preds = torch.zeros([])
     
-    for i, (inputs, target) in enumerate(data_loader, 1):
-        assert isinstance(inputs, dict)
-        assert 'input_ids' in inputs.keys()
-        assert 'attention_mask' in inputs.keys()
+    for i, (input_ids, target) in enumerate(data_loader, 1):
         assert isinstance(target, int)
-        
-        inputs = inputs.to(dist.get_rank())
+
+        input_ids = input_ids.to(dist.get_rank())
         
         with torch.autocast('cuda', torch.float16):
-            logits = model(**inputs)
-            log_probs = logits.log_softmax(-1)
-            indices = torch.tensor([[target]]).repeat(inputs.size(0), 1)
-            log_probs = log_probs.gather(-1, indices)
-            choice = log_probs.argmax(0)
+            target_ids = input_ids[:, :-1]
+            input_ids = input_ids[:, 1:]
+
+            logits = model(input_ids)
+            nlls = F.cross_entropy(
+                logits.view(-1, logits.size(-1)),
+                target_ids.flatten(0),
+                ignore_index=50256,
+                reduction='none'
+            )
+            nlls = nlls.view(logits.shape[:2]).sum(-1)
+            choice = nlls.argmin(0)
             
             if choice == target:
                 n_true_preds += 1.
@@ -43,9 +48,9 @@ def evaluate(model, data_loader):
             dist.all_reduce(acc, dist.ReduceOp.AVG)
             
             if pbar is not None:
-                pbar.set_postfix(f'acc: {acc.item()}')
+                pbar.set_postfix(acc=acc.item())
                 pbar.update()
-            
+                
     return acc
 
 
